@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TMFL | Halloween Classic</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05030a;color:white;font-family:Arial,Helvetica,sans-serif}
+#screen{position:fixed;inset:0;overflow:hidden;background:radial-gradient(circle at 50% 45%,#35193c 0%,#070816 70%)}
+.art{position:absolute;inset:-8%;background:url('halloween-classic.png') center/cover no-repeat;filter:brightness(.47) saturate(1.22);animation:pan 17s ease-in-out infinite alternate}
+.haze{position:absolute;inset:-10%;background:radial-gradient(ellipse at 12% 85%,#8d28f399,transparent 50%),radial-gradient(ellipse at 88% 75%,#037ff699,transparent 45%);filter:blur(47px);animation:fog 11s ease-in-out infinite alternate}
+.shade{position:absolute;inset:0;box-shadow:inset 0 0 21vw 9vw #000b;background:linear-gradient(transparent 55%,#0007)}
+#flash{position:absolute;inset:0;background:#d7e8ff;opacity:0;pointer-events:none}#flash.go{animation:lightning .8s}
+main{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:5vw}
+#words{max-width:1100px;animation:appear 1s both}
+.kicker{font-size:clamp(11px,1.35vw,18px);text-transform:uppercase;letter-spacing:.4em;color:#e8d1ff;margin-bottom:18px;text-shadow:0 2px 10px black}
+.headline{font-family:Georgia,'Times New Roman',serif;font-weight:900;font-size:clamp(33px,6.4vw,94px);line-height:1.08;letter-spacing:-.035em;text-shadow:0 5px 22px #000,0 0 35px #000}
+.purple{color:#bc79ff}.blue{color:#66ccff}.orange{color:#ff9b32}
+#caption{position:absolute;bottom:80px;left:10%;width:80%;text-align:center;color:#f0e4ff;font-size:clamp(12px,1.5vw,18px);text-shadow:0 2px 12px black;letter-spacing:.04em}
+#bar{position:absolute;bottom:0;left:0;width:0;height:4px;background:linear-gradient(90deg,#9b35f6,#ff692a,#2db7ff)}
+header{position:absolute;top:20px;left:22px;font-size:12px;letter-spacing:.24em;color:#e6deec}
+footer{position:absolute;bottom:19px;left:22px;right:22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+footer small{color:#ccc;letter-spacing:.1em}button{background:#f78c32;color:#1b0802;border:0;border-radius:3px;padding:12px 19px;font-weight:900;cursor:pointer;font-size:14px}
+#replay{display:none;background:#222b;color:white;border:1px solid #fff5}
+@keyframes pan{from{transform:scale(1.08) translate(-1%,0)}to{transform:scale(1.2) translate(1%,-2%)}}@keyframes fog{from{transform:translateX(-6%)}to{transform:translateX(7%)}}@keyframes appear{from{opacity:0;filter:blur(16px);transform:scale(1.15)}to{opacity:1;filter:blur(0);transform:scale(1)}}@keyframes lightning{0%,23%,43%,100%{opacity:0}8%{opacity:.85}32%{opacity:.55}}
+@media(max-width:620px){footer small{display:none}.kicker{letter-spacing:.2em}#caption{bottom:95px}}
+</style></head><body><div id="screen"><div class="art"></div><div class="haze"></div><div class="shade"></div><div id="flash"></div>
+<header>TMFL • SPECIAL INTROS</header><main><div id="words"><div class="kicker">TMFL PRESENTS</div><div class="headline orange">HALLOWEEN CLASSIC</div></div></main>
+<div id="caption">Baltimore Ravens vs. Tennessee Titans</div><div id="bar"></div>
+<footer><small>THE HALLOWEEN CLASSIC • BALTIMORE × TENNESSEE</small><div><button id="start">▶ START CINEMATIC</button><button id="replay">↻ REPLAY</button></div><small id="state">Sound starts on click</small></footer>
+</div><script>
+const scenes=[
+[0,'EVERY OCTOBER','The nights grow <span class="purple">longer.</span>','Every October... the nights grow longer.'],
+[3400,'THE DARKNESS FALLS','The shadows grow <span class="purple">darker.</span>','The shadows grow darker.'],
+[6700,'WHEN THE CLOCK STRIKES','<span style="font-size:1.7em">MIDNIGHT</span>','And when the clock strikes midnight...','chime'],
+[10200,'THE MONSTERS AWAKEN','THE MONSTERS<br><span class="orange">COME OUT TO PLAY.</span>','...the monsters come out to play.','thunder'],
+[13900,'FROM THE DARKNESS OF BALTIMORE','<span class="purple">THE RAVENS</span>','An omen of fear. A shadow of death. A nightmare with wings.'],
+[18500,'FROM THE STORMS OF TENNESSEE','<span class="blue">THE TITANS</span>','A force of thunder. An unstoppable storm.','thunder'],
+[22900,'TWO TEAMS • ONE NIGHT','<span class="purple">RAVENS</span><br><span style="font-size:.6em">VS</span><br><span class="blue">TITANS</span>','Baltimore Ravens vs. Tennessee Titans'],
+[28100,'A TMFL SPECIAL PRESENTATION','<span class="orange">HALLOWEEN<br>CLASSIC</span>','The Halloween Classic.','thunder']
+];
+let ctx,started=0,previous=-1,animation;
+function note(f,secs=.4,gain=.045,delay=0){if(!ctx)return;const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+delay;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+secs);o.connect(g).connect(ctx.destination);o.start(t);o.stop(t+secs+.05)}
+function cue(type){if(type==='chime'){note(220,.8,.08);note(330,1,.05,.08);note(440,1.4,.04,.16)}if(type==='thunder'){const f=document.getElementById('flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');for(let i=0;i<8;i++)note(42+i*8,.4,.065,i*.085)}}
+function frame(t){let ms=t-started,idx=-1;for(let i=0;i<scenes.length;i++)if(ms>=scenes[i][0])idx=i;if(idx!==previous&&idx>=0){previous=idx;let s=scenes[idx],w=document.getElementById('words');w.style.animation='none';void w.offsetWidth;w.style.animation='appear .9s both';w.innerHTML='<div class="kicker">'+s[1]+'</div><div class="headline">'+s[2]+'</div>';document.getElementById('caption').textContent=s[3];if(s[4])cue(s[4])}document.getElementById('bar').style.width=Math.min(ms/35000*100,100)+'%';if(ms<35000)animation=requestAnimationFrame(frame);else document.getElementById('caption').textContent='TMFL HALLOWEEN CLASSIC • REPLAY THE INTRO'}
+function play(){cancelAnimationFrame(animation);try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){document.getElementById('state').textContent='Audio unavailable'}previous=-1;started=performance.now();document.getElementById('start').style.display='none';document.getElementById('replay').style.display='inline-block';requestAnimationFrame(frame)}
+document.getElementById('start').onclick=play;document.getElementById('replay').onclick=play;
+</script></body></html>
