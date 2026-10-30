@@ -1,0 +1,21 @@
+name: Render Halloween Classic MP4
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install voice and video tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng fonts-dejavu-core
+      - name: Render video
+        run: python3 render.py
+      - name: Upload finished MP4
+        uses: actions/upload-artifact@v4
+        with:
+          name: TMFL-Halloween-Classic-MP4
+          path: halloween-classic.mp4
+          retention-days: 30
