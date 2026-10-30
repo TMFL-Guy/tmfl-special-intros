@@ -6,7 +6,10 @@ import os, subprocess, tempfile, pathlib
 ROOT=pathlib.Path(__file__).resolve().parent
 OUT=ROOT/"halloween-classic.mp4"
 ART=ROOT/"halloween-classic.png"
-if not ART.exists(): raise SystemExit("Upload halloween-classic.png to the repository root first.")
+if not ART.exists():
+    candidates=sorted(ROOT.glob("*.png"))
+    if candidates: ART=candidates[0]
+if not ART.exists(): raise SystemExit("No PNG artwork found in the repository root.")
 SCENES=[
 ("Every October... the nights grow longer.", "EVERY OCTOBER", "THE NIGHTS GROW LONGER", "wind"),
 ("The shadows grow darker.", "THE SHADOWS", "GROW DARKER", "clock"),
