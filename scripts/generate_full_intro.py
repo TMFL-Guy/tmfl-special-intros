@@ -21,8 +21,8 @@ DURATION = os.environ.get("SCENE_DURATION", "3.5")
 SCENES = [
     ("stadium", "Photorealistic empty football stadium at midnight. Thick ground fog drifts across the field, stadium floodlights flicker, camera slowly pushes forward. Continuous realistic motion, no text, no morphing."),
     ("raven", "Cinematic closeup of a realistic black raven perched on a stadium floodlight at night. Purple reflections in its eyes. The bird naturally spreads both wings and launches into flight, camera follows smoothly. Anatomically consistent raven, no morphing, no text."),
-    ("titan", "Cinematic massive ancient armored titan warrior in a dark stormy stadium. Blue lightning illuminates armor, blue fog swirls as the warrior slowly steps forward. Natural continuous movement, no morphing, no text."),
-    ("collision", "Epic nighttime football stadium under storm clouds. Purple lightning and blue lightning surge toward each other and collide above the field, swirling fog and dramatic camera movement. Realistic continuous motion, no text."),
+    ("titan", "A huge armored fantasy guardian stands in a misty football stadium at night. Blue light flickers gently on the armor as fog moves and the camera slowly pushes in. Smooth cinematic motion, no text."),
+    ("collision", "Purple and electric-blue energy streams swirl and meet at the center of a nighttime football stadium. Sparks shimmer and clouds drift. Slow cinematic camera movement, smooth animation, no text."),
     ("finale", "Slow dramatic camera push toward a glowing Halloween Classic football poster, purple and electric blue smoke billows across the edges, cinematic atmospheric lighting, maintain original logo shapes and typography, no morphing."),
 ]
 
@@ -66,7 +66,7 @@ def main():
         print(f"=== Scene {idx}/{len(scenes)}: {name} ===", flush=True)
         url, local = source_for(name)
         env = os.environ.copy()
-        env.update(INPUT_IMAGE_URL=url, INPUT_PROMPT=prompt, INPUT_DURATION=DURATION)
+        env.update(INPUT_IMAGE_URL=url, INPUT_PROMPT=prompt, INPUT_DURATION=DURATION, MAX_INPUT_WIDTH="832", MAX_INPUT_HEIGHT="480")
         shared = ROOT / "assets" / "scene.png"
         shared.parent.mkdir(parents=True, exist_ok=True)
         if local:
