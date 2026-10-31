@@ -48,7 +48,11 @@ def source_for(name):
     return "", None
 
 def main():
-    missing = [name for name, _ in SCENES if not any(source_for(name))]
+    selected = {x.strip().lower() for x in os.environ.get("SELECT_SCENES", "").split(",") if x.strip()}
+    scenes = [(name, prompt) for name, prompt in SCENES if not selected or name in selected]
+    if not scenes:
+        raise ValueError("No matching scenes selected.")
+    missing = [name for name, _ in scenes if not any(source_for(name))]
     if missing:
         raise RuntimeError(
             "Missing scene images: " + ", ".join(missing) +
@@ -58,8 +62,8 @@ def main():
     clips = []
     skipped = []
     attempts = int(os.environ.get("SCENE_MAX_ATTEMPTS", "2"))
-    for idx, (name, prompt) in enumerate(SCENES, 1):
-        print(f"=== Scene {idx}/5: {name} ===", flush=True)
+    for idx, (name, prompt) in enumerate(scenes, 1):
+        print(f"=== Scene {idx}/{len(scenes)}: {name} ===", flush=True)
         url, local = source_for(name)
         env = os.environ.copy()
         env.update(INPUT_IMAGE_URL=url, INPUT_PROMPT=prompt, INPUT_DURATION=DURATION)
@@ -107,10 +111,10 @@ def main():
         normalized.append(norm)
     manifest = OUT / "concat.txt"
     manifest.write_text("".join(f"file '{p.name}'\n" for p in normalized))
-    final = OUT / "TMFL-Halloween-Classic-Intro.mp4"
+    final = OUT / ("TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
                     "-i", str(manifest), "-c", "copy", "-movflags", "+faststart", str(final)], check=True)
-    (OUT / "full-intro-status.txt").write_text(f"SUCCESS: {final.name}; 5 scenes; silent video\n")
+    (OUT / "full-intro-status.txt").write_text(f"SUCCESS: {final.name}; {len(clips)}/{len(scenes)} scenes; skipped: {', '.join(skipped) or 'none'}; silent video\n")
     print(f"SUCCESS: {final}; scenes rendered: {len(clips)}/5; skipped: {skipped}", flush=True)
 
 if __name__ == "__main__":
