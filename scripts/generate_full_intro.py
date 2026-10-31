@@ -21,6 +21,8 @@ DURATION = os.environ.get("SCENE_DURATION", "3.5")
 SCENES = [
     ("stadium", "Photorealistic empty football stadium at midnight. Thick ground fog drifts across the field, stadium floodlights flicker, camera slowly pushes forward. Continuous realistic motion, no text, no morphing."),
     ("raven", "Cinematic closeup of a realistic black raven perched on a stadium floodlight at night. Purple reflections in its eyes. The bird naturally spreads both wings and launches into flight, camera follows smoothly. Anatomically consistent raven, no morphing, no text."),
+    ("raven_descends", "A giant realistic black raven flies downward through a completely dark football stadium at midnight, beating its wings and descending toward the field. Its eyes glow violet. Purple lightning flashes across storm clouds and briefly illuminates its feathers. All stadium floodlights remain switched OFF, only lightning illuminates the stadium. Thick purple fog rolls across the turf. Cinematic smooth continuous motion, no logos, no text."),
+    ("ravens_graveyard", "A black raven with glowing purple eyes flies low into a dark foggy stadium graveyard, slows and lands on a rock between EXACTLY TWO weathered tombstones. Left tombstone: Jacksonville Jaguars logo and JAGUARS. Right tombstone: Tampa Bay Buccaneers logo and BUCCANEERS. No other gravestones, no Baltimore Ravens logo. Purple lightning flashes in the distance, fog drifts slowly. Cinematic smooth motion, preserve stone engravings."),
     ("logo_disintegration", "FIRST SHOT ONLY. The armored Titan drives his glowing blue sword through the Baltimore Ravens emblem. The Ravens emblem cracks, fractures into hundreds of tiny purple shards, and completely disintegrates into purple dust and smoke. The Ravens emblem must be gone by the end. Do NOT reveal or animate the Titans emblem yet. Cinematic continuous motion, no text."),
     ("logo_emergence", "SECOND SHOT AFTER the Ravens emblem has completely disappeared. A giant Tennessee Titans emblem materializes from swirling electric blue fog, growing larger and becoming brilliantly illuminated. Blue smoke curls around the emblem, camera slowly pushes in. No Ravens emblem visible, no destruction, preserve Titans emblem shape, no extra text."),
     ("fight_charge", "Cinematic football stadium at night. The giant raven flies forward from the right with talons extended, wings beating. The armored Titan charges forward from the left, holding his blue glowing sword high over his head, ready to strike. Camera tracks the approach, wind and fog move, realistic smooth action, no impact yet, no logos or text."),
@@ -38,6 +40,8 @@ def source_for(name):
         return url, None
     uploaded_names = {
         "stadium": "01_Original_Haunted_Stadium.jpg",
+        "raven_descends": "35ce7a01-21b5-45b0-a059-c59fc9badde7.png",
+        "ravens_graveyard": "ed12321a-8776-43ea-bf57-f51be360e592.png",
         "raven": "a_dramatic_cinematic_night_scene_the_same_black.png",
         "raven_reveal": "a_dramatic_cinematic_cgi_scene_a_dark_stormy_sky.png",
         "raven_titans_breakthrough": "850b3818-23db-4c57-854a-dd58d10b180c.png",
@@ -110,7 +114,7 @@ def main():
         clip = OUT / f"{idx:02d}-{name}.mp4"
         generated.replace(clip)
         clips.append(clip)
-    if selected == {"logo_disintegration", "logo_emergence"} and skipped:
+    if selected in ({"logo_disintegration", "logo_emergence"}, {"raven_descends", "ravens_graveyard"}) and skipped:
         raise RuntimeError("Transformation incomplete: both the Ravens disintegration and the later Titans reveal must render successfully.")
     if not clips:
         raise RuntimeError("All scenes were rejected by the public AI video service.")
@@ -125,7 +129,7 @@ def main():
         normalized.append(norm)
     manifest = OUT / "concat.txt"
     manifest.write_text("".join(f"file '{p.name}'\n" for p in normalized))
-    final = OUT / ("TMFL-Ravens-Fog-Logo-Reveal.mp4" if selected == {"raven_reveal"} else "TMFL-Raven-Titans-Breakthrough.mp4" if selected == {"raven_titans_breakthrough"} else "TMFL-Titans-Logo-Disintegration.mp4" if selected == {"logo_disintegration", "logo_emergence"} or selected == {"logo_disintegration"} else "TMFL-Raven-Titan-Fight.mp4" if selected == {"fight_charge", "fight_impact"} else "TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
+    final = OUT / ("TMFL-Ravens-Fog-Logo-Reveal.mp4" if selected == {"raven_reveal"} else "TMFL-Raven-Descent-Graveyard.mp4" if selected == {"raven_descends", "ravens_graveyard"} else "TMFL-Raven-Titans-Breakthrough.mp4" if selected == {"raven_titans_breakthrough"} else "TMFL-Titans-Logo-Disintegration.mp4" if selected == {"logo_disintegration", "logo_emergence"} or selected == {"logo_disintegration"} else "TMFL-Raven-Titan-Fight.mp4" if selected == {"fight_charge", "fight_impact"} else "TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
                     "-i", str(manifest), "-c", "copy", "-movflags", "+faststart", str(final)], check=True)
     (OUT / "full-intro-status.txt").write_text(f"SUCCESS: {final.name}; {len(clips)}/{len(scenes)} scenes; skipped: {', '.join(skipped) or 'none'}; silent video\n")
