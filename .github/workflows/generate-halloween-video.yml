@@ -1,0 +1,47 @@
+name: Generate Halloween CGI Clip
+on:
+  workflow_dispatch:
+    inputs:
+      image_url:
+        description: 'Direct HTTPS URL to a PNG/JPG image (optional if assets/scene.png exists)'
+        required: false
+        type: string
+      prompt:
+        description: 'Motion prompt'
+        required: true
+        default: 'Photorealistic nighttime football stadium. Thick fog rolls across the empty field. Stadium lights flicker. Slow cinematic camera push, natural continuous movement, no text, no morphing.'
+        type: string
+      duration:
+        description: 'Seconds (0.5 to 4.5)'
+        required: true
+        default: '3.5'
+        type: string
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install requests pillow
+      - name: Generate MP4 using free public Wan 2.2 Space
+        env:
+          INPUT_IMAGE_URL: ${{ inputs.image_url }}
+          INPUT_PROMPT: ${{ inputs.prompt }}
+          INPUT_DURATION: ${{ inputs.duration }}
+        run: python scripts/generate_wan_clip.py
+      - name: Upload generated MP4 and status log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: halloween-classic-generation
+          path: |
+            output/*.mp4
+            output/status.txt
+          if-no-files-found: warn
+          retention-days: 7
