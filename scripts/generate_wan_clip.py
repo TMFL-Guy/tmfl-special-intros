@@ -53,7 +53,13 @@ def prepare_image():
         else:
             raise ValueError("No image found. Provide image_url, or add assets/scene.png to the repository.")
     with Image.open(target) as img:
-        img.convert("RGB").save(target, "PNG", optimize=True)
+        rgb = img.convert("RGB")
+        # Lower source resolution reduces memory use on the free shared GPU.
+        max_width = int(os.environ.get("MAX_INPUT_WIDTH", "832"))
+        max_height = int(os.environ.get("MAX_INPUT_HEIGHT", "480"))
+        rgb.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+        rgb.save(target, "PNG", optimize=True)
+        print(f"Prepared video source: {rgb.width}x{rgb.height}", flush=True)
     if target.stat().st_size > 8 * 1024 * 1024:
         raise ValueError("Converted image exceeds 8 MB; use a smaller image.")
     return target
