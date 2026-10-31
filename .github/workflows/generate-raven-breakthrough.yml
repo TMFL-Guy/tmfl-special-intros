@@ -1,0 +1,41 @@
+name: Generate Raven Breaks Titans Logo CGI
+on:
+  workflow_dispatch:
+    inputs:
+      scene_duration:
+        description: 'Seconds for Raven breakthrough (0.5 to 4.5)'
+        required: true
+        default: '3.5'
+        type: string
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install video dependencies
+        run: |
+          python -m pip install requests pillow
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Animate Raven flying through Titans logo into Ravens reveal
+        env:
+          SELECT_SCENES: raven_titans_breakthrough
+          SCENE_DURATION: ${{ inputs.scene_duration }}
+          SCENE_MAX_ATTEMPTS: '2'
+        run: python scripts/generate_full_intro.py
+      - name: Upload Raven CGI MP4
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TMFL-Raven-Titans-Breakthrough
+          path: |
+            output/*.mp4
+            output/*status.txt
+          if-no-files-found: warn
+          retention-days: 7
