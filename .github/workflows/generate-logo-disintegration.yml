@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       scene_duration:
-        description: 'Seconds for the transformation (0.5 to 4.5)'
+        description: 'Seconds per transformation shot (0.5 to 4.5)'
         required: true
         default: '3.5'
         type: string
@@ -25,11 +25,11 @@ jobs:
           sudo apt-get install -y ffmpeg
       - name: Animate Ravens logo disintegration and Titans logo emergence
         env:
-          SELECT_SCENES: logo_disintegration
+          SELECT_SCENES: logo_disintegration,logo_emergence
           SCENE_DURATION: ${{ inputs.scene_duration }}
           SCENE_MAX_ATTEMPTS: '2'
         run: python scripts/generate_full_intro.py
-      - name: Upload CGI clip
+      - name: Upload both CGI clips and combined video
         if: always()
         uses: actions/upload-artifact@v4
         with:
