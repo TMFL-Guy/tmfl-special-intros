@@ -108,6 +108,8 @@ def main():
         clip = OUT / f"{idx:02d}-{name}.mp4"
         generated.replace(clip)
         clips.append(clip)
+    if selected == {"logo_disintegration", "logo_emergence"} and skipped:
+        raise RuntimeError("Transformation incomplete: both the Ravens disintegration and the later Titans reveal must render successfully.")
     if not clips:
         raise RuntimeError("All scenes were rejected by the public AI video service.")
     # Re-encode to consistent parameters; the upstream may vary dimensions/frame rates.
