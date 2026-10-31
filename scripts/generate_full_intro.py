@@ -21,6 +21,7 @@ DURATION = os.environ.get("SCENE_DURATION", "3.5")
 SCENES = [
     ("stadium", "Photorealistic empty football stadium at midnight. Thick ground fog drifts across the field, stadium floodlights flicker, camera slowly pushes forward. Continuous realistic motion, no text, no morphing."),
     ("raven", "Cinematic closeup of a realistic black raven perched on a stadium floodlight at night. Purple reflections in its eyes. The bird naturally spreads both wings and launches into flight, camera follows smoothly. Anatomically consistent raven, no morphing, no text."),
+    ("raven_reveal", "A black raven flies into thick rolling purple fog and vanishes. Purple lightning flickers, and the Baltimore Ravens emblem becomes visible through the clearing mist. Smooth cinematic camera push, preserve emblem design, no extra text."),
     ("titan", "A huge armored fantasy guardian stands in a misty football stadium at night. Blue light flickers gently on the armor as fog moves and the camera slowly pushes in. Smooth cinematic motion, no text."),
     ("collision", "Purple and electric-blue energy streams swirl and meet at the center of a nighttime football stadium. Sparks shimmer and clouds drift. Slow cinematic camera movement, smooth animation, no text."),
     ("finale", "Slow dramatic camera push toward a glowing Halloween Classic football poster, purple and electric blue smoke billows across the edges, cinematic atmospheric lighting, maintain original logo shapes and typography, no morphing."),
@@ -33,6 +34,7 @@ def source_for(name):
     uploaded_names = {
         "stadium": "01_Original_Haunted_Stadium.jpg",
         "raven": "a_dramatic_cinematic_night_scene_the_same_black.png",
+        "raven_reveal": "a_dramatic_cinematic_cgi_scene_a_dark_stormy_sky.png",
         "titan": "dramatic_cinematic_scene_a_giant_armored_titan_w.png",
         "collision": "a_dramatic_cinematic_sci_fi_sports_collision_scene.png",
     }
@@ -111,7 +113,7 @@ def main():
         normalized.append(norm)
     manifest = OUT / "concat.txt"
     manifest.write_text("".join(f"file '{p.name}'\n" for p in normalized))
-    final = OUT / ("TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
+    final = OUT / ("TMFL-Ravens-Fog-Logo-Reveal.mp4" if selected == {"raven_reveal"} else "TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
                     "-i", str(manifest), "-c", "copy", "-movflags", "+faststart", str(final)], check=True)
     (OUT / "full-intro-status.txt").write_text(f"SUCCESS: {final.name}; {len(clips)}/{len(scenes)} scenes; skipped: {', '.join(skipped) or 'none'}; silent video\n")
