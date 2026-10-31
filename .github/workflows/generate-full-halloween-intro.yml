@@ -1,0 +1,63 @@
+name: Generate Full Halloween Classic Intro
+on:
+  workflow_dispatch:
+    inputs:
+      stadium_image_url:
+        description: 'Direct HTTPS image URL for empty stadium (or upload assets/halloween/stadium.png)'
+        required: false
+        type: string
+      raven_image_url:
+        description: 'Direct HTTPS image URL for raven (or upload assets/halloween/raven.png)'
+        required: false
+        type: string
+      titan_image_url:
+        description: 'Direct HTTPS image URL for armored Titan (or upload assets/halloween/titan.png)'
+        required: false
+        type: string
+      collision_image_url:
+        description: 'Direct HTTPS image URL for lightning collision (or upload assets/halloween/collision.png)'
+        required: false
+        type: string
+      finale_image_url:
+        description: 'Optional finale image URL; existing Halloween poster is default'
+        required: false
+        type: string
+      scene_duration:
+        description: 'Seconds per scene, 0.5 to 4.5 (five scenes)'
+        required: true
+        default: '3.5'
+        type: string
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install requests pillow
+          ffmpeg -version | head -1
+      - name: Generate five clips and assemble final MP4
+        env:
+          IMAGE_URL_STADIUM: ${{ inputs.stadium_image_url }}
+          IMAGE_URL_RAVEN: ${{ inputs.raven_image_url }}
+          IMAGE_URL_TITAN: ${{ inputs.titan_image_url }}
+          IMAGE_URL_COLLISION: ${{ inputs.collision_image_url }}
+          IMAGE_URL_FINALE: ${{ inputs.finale_image_url }}
+          SCENE_DURATION: ${{ inputs.scene_duration }}
+        run: python scripts/generate_full_intro.py
+      - name: Upload finished movie and scene clips
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TMFL-Halloween-Classic-Full-Intro
+          path: |
+            output/*.mp4
+            output/*status.txt
+          if-no-files-found: warn
+          retention-days: 7
