@@ -3,7 +3,7 @@ from mathutils import Vector
 random.seed(7)
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
 scene=bpy.context.scene
-scene.render.engine='BLENDER_EEVEE_NEXT'
+scene.render.engine='BLENDER_EEVEE'
 scene.render.resolution_x=1280;scene.render.resolution_y=720;scene.render.resolution_percentage=100
 scene.render.fps=24;scene.frame_end=240
 scene.world.color=(.008,.013,.03)
