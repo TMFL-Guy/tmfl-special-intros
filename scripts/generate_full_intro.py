@@ -29,6 +29,15 @@ def source_for(name):
     url = os.environ.get("IMAGE_URL_" + name.upper(), "").strip()
     if url:
         return url, None
+    uploaded_names = {
+        "stadium": "01_Original_Haunted_Stadium.jpg",
+        "raven": "a_dramatic_cinematic_night_scene_the_same_black.png",
+        "titan": "dramatic_cinematic_scene_a_giant_armored_titan_w.png",
+        "collision": "a_dramatic_cinematic_sci_fi_sports_collision_scene.png",
+    }
+    uploaded = ASSETS / uploaded_names.get(name, "__none__")
+    if uploaded.is_file():
+        return "", uploaded
     for ext in (".png", ".jpg", ".jpeg"):
         file = ASSETS / (name + ext)
         if file.is_file():
