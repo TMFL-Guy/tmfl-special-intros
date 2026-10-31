@@ -25,6 +25,7 @@ SCENES = [
     ("logo_emergence", "SECOND SHOT AFTER the Ravens emblem has completely disappeared. A giant Tennessee Titans emblem materializes from swirling electric blue fog, growing larger and becoming brilliantly illuminated. Blue smoke curls around the emblem, camera slowly pushes in. No Ravens emblem visible, no destruction, preserve Titans emblem shape, no extra text."),
     ("fight_charge", "Cinematic football stadium at night. The giant raven flies forward from the right with talons extended, wings beating. The armored Titan charges forward from the left, holding his blue glowing sword high over his head, ready to strike. Camera tracks the approach, wind and fog move, realistic smooth action, no impact yet, no logos or text."),
     ("fight_impact", "Cinematic impact at midfield. The Titan brings his glowing blue sword downward and the raven blocks it with extended talons. At the exact point where sword and talons touch, bright blue and purple lightning erupts outward across the night stadium. Sparks and shockwave spread through the fog. Dramatic continuous motion, no logos, no text."),
+    ("raven_titans_breakthrough", "A giant black raven flies forward through a large glowing Tennessee Titans emblem, shattering it into blue crystalline fragments and swirling blue mist. The raven continues through the fragments with strong wingbeats as a Baltimore Ravens emblem emerges behind it in purple fog and violet lightning. Cinematic continuous motion, preserve logos, no text."),
     ("raven_reveal", "A black raven flies into thick rolling purple fog and vanishes. Purple lightning flickers, and the Baltimore Ravens emblem becomes visible through the clearing mist. Smooth cinematic camera push, preserve emblem design, no extra text."),
     ("titan", "A huge armored fantasy guardian stands in a misty football stadium at night. Blue light flickers gently on the armor as fog moves and the camera slowly pushes in. Smooth cinematic motion, no text."),
     ("collision", "Purple and electric-blue energy streams swirl and meet at the center of a nighttime football stadium. Sparks shimmer and clouds drift. Slow cinematic camera movement, smooth animation, no text."),
@@ -39,6 +40,7 @@ def source_for(name):
         "stadium": "01_Original_Haunted_Stadium.jpg",
         "raven": "a_dramatic_cinematic_night_scene_the_same_black.png",
         "raven_reveal": "a_dramatic_cinematic_cgi_scene_a_dark_stormy_sky.png",
+        "raven_titans_breakthrough": "850b3818-23db-4c57-854a-dd58d10b180c.png",
         "fight_charge": "a_dramatic_cinematic_high_detail_cgi_photoreal_f.png",
         "logo_disintegration": "a_cinematic_hyper_detailed_digital_cgi_scene_a_d.png",
         "logo_emergence": "a_cinematic_hyper_detailed_digital_cgi_scene_a_d.png",
@@ -123,7 +125,7 @@ def main():
         normalized.append(norm)
     manifest = OUT / "concat.txt"
     manifest.write_text("".join(f"file '{p.name}'\n" for p in normalized))
-    final = OUT / ("TMFL-Ravens-Fog-Logo-Reveal.mp4" if selected == {"raven_reveal"} else "TMFL-Titans-Logo-Disintegration.mp4" if selected == {"logo_disintegration", "logo_emergence"} or selected == {"logo_disintegration"} else "TMFL-Raven-Titan-Fight.mp4" if selected == {"fight_charge", "fight_impact"} else "TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
+    final = OUT / ("TMFL-Ravens-Fog-Logo-Reveal.mp4" if selected == {"raven_reveal"} else "TMFL-Raven-Titans-Breakthrough.mp4" if selected == {"raven_titans_breakthrough"} else "TMFL-Titans-Logo-Disintegration.mp4" if selected == {"logo_disintegration", "logo_emergence"} or selected == {"logo_disintegration"} else "TMFL-Raven-Titan-Fight.mp4" if selected == {"fight_charge", "fight_impact"} else "TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
                     "-i", str(manifest), "-c", "copy", "-movflags", "+faststart", str(final)], check=True)
     (OUT / "full-intro-status.txt").write_text(f"SUCCESS: {final.name}; {len(clips)}/{len(scenes)} scenes; skipped: {', '.join(skipped) or 'none'}; silent video\n")
