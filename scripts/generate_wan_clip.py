@@ -44,13 +44,14 @@ def prepare_image():
             raise ValueError("Image exceeds 8 MB.")
         target.write_bytes(r.content)
     else:
-        for name in ("assets/scene.png", "assets/scene.jpg", "halloween-classic.png"):
+        for name in ("assets/scene.png", "assets/scene.jpg", "halloween-classic.png", "ChatGPT Image Oct 30, 2026, 05_17_08 PM.png"):
             candidate = ROOT / name
             if candidate.exists():
                 target.write_bytes(candidate.read_bytes())
+                print(f"Using repository image: {name}", flush=True)
                 break
         else:
-            raise ValueError("No image found. Provide image_url in Run workflow, or add assets/scene.png to the repository.")
+            raise ValueError("No image found. Provide image_url, or add assets/scene.png to the repository.")
     with Image.open(target) as img:
         img.convert("RGB").save(target, "PNG", optimize=True)
     if target.stat().st_size > 8 * 1024 * 1024:
