@@ -21,6 +21,7 @@ DURATION = os.environ.get("SCENE_DURATION", "3.5")
 SCENES = [
     ("stadium", "Photorealistic empty football stadium at midnight. Thick ground fog drifts across the field, stadium floodlights flicker, camera slowly pushes forward. Continuous realistic motion, no text, no morphing."),
     ("raven", "Cinematic closeup of a realistic black raven perched on a stadium floodlight at night. Purple reflections in its eyes. The bird naturally spreads both wings and launches into flight, camera follows smoothly. Anatomically consistent raven, no morphing, no text."),
+    ("logo_disintegration", "The armored Titan thrusts his glowing blue sword through the Baltimore Ravens emblem. The Ravens emblem visibly cracks into many small fragments and disintegrates into swirling purple sparks. As the fragments dissolve, a large Tennessee Titans emblem emerges behind them, filling the frame amid thick luminous blue fog. Cinematic continuous movement, preserve both emblem designs, no other text."),
     ("fight_charge", "Cinematic football stadium at night. The giant raven flies forward from the right with talons extended, wings beating. The armored Titan charges forward from the left, holding his blue glowing sword high over his head, ready to strike. Camera tracks the approach, wind and fog move, realistic smooth action, no impact yet, no logos or text."),
     ("fight_impact", "Cinematic impact at midfield. The Titan brings his glowing blue sword downward and the raven blocks it with extended talons. At the exact point where sword and talons touch, bright blue and purple lightning erupts outward across the night stadium. Sparks and shockwave spread through the fog. Dramatic continuous motion, no logos, no text."),
     ("raven_reveal", "A black raven flies into thick rolling purple fog and vanishes. Purple lightning flickers, and the Baltimore Ravens emblem becomes visible through the clearing mist. Smooth cinematic camera push, preserve emblem design, no extra text."),
@@ -38,6 +39,7 @@ def source_for(name):
         "raven": "a_dramatic_cinematic_night_scene_the_same_black.png",
         "raven_reveal": "a_dramatic_cinematic_cgi_scene_a_dark_stormy_sky.png",
         "fight_charge": "a_dramatic_cinematic_high_detail_cgi_photoreal_f.png",
+        "logo_disintegration": "a_cinematic_hyper_detailed_digital_cgi_scene_a_d.png",
         "fight_impact": "image(6).png",
         "titan": "dramatic_cinematic_scene_a_giant_armored_titan_w.png",
         "collision": "a_dramatic_cinematic_sci_fi_sports_collision_scene.png",
@@ -117,7 +119,7 @@ def main():
         normalized.append(norm)
     manifest = OUT / "concat.txt"
     manifest.write_text("".join(f"file '{p.name}'\n" for p in normalized))
-    final = OUT / ("TMFL-Ravens-Fog-Logo-Reveal.mp4" if selected == {"raven_reveal"} else "TMFL-Raven-Titan-Fight.mp4" if selected == {"fight_charge", "fight_impact"} else "TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
+    final = OUT / ("TMFL-Ravens-Fog-Logo-Reveal.mp4" if selected == {"raven_reveal"} else "TMFL-Titans-Logo-Disintegration.mp4" if selected == {"logo_disintegration"} else "TMFL-Raven-Titan-Fight.mp4" if selected == {"fight_charge", "fight_impact"} else "TMFL-Titan-Collision-CGI.mp4" if selected == {"titan", "collision"} else "TMFL-Halloween-Classic-Intro.mp4")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
                     "-i", str(manifest), "-c", "copy", "-movflags", "+faststart", str(final)], check=True)
     (OUT / "full-intro-status.txt").write_text(f"SUCCESS: {final.name}; {len(clips)}/{len(scenes)} scenes; skipped: {', '.join(skipped) or 'none'}; silent video\n")
