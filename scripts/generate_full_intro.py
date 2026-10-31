@@ -35,6 +35,12 @@ SCENES = [
 ]
 
 def source_for(name):
+    override_filename = os.environ.get("IMAGE_FILE_" + name.upper(), "").strip()
+    if override_filename:
+        override = ASSETS / pathlib.Path(override_filename).name
+        if not override.is_file():
+            raise FileNotFoundError(f"Selected image for {name} does not exist: {override_filename}")
+        return "", override
     url = os.environ.get("IMAGE_URL_" + name.upper(), "").strip()
     if url:
         return url, None
