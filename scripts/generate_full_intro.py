@@ -10,6 +10,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
@@ -70,8 +71,24 @@ def main():
             shared = ROOT / "assets" / "scene.png"
             shared.unlink(missing_ok=True)
         try:
-            subprocess.run([sys.executable, str(ROOT / "scripts" / "generate_wan_clip.py")],
-                           env=env, check=True)
+            max_attempts = 5
+            for attempt in range(1, max_attempts + 1):
+                print(f"Scene {name}: rendering attempt {attempt}/{max_attempts}", flush=True)
+                result = subprocess.run(
+                    [sys.executable, str(ROOT / "scripts" / "generate_wan_clip.py")],
+                    env=env, check=False
+                )
+                if result.returncode == 0:
+                    break
+                if attempt == max_attempts:
+                    raise RuntimeError(
+                        f"Scene {name} failed after {max_attempts} attempts; "
+                        "the shared public AI service may be unavailable. "
+                        "Previously generated scene clips are still in the artifact."
+                    )
+                delay = min(20 * attempt, 90)
+                print(f"Public GPU temporary failure; retrying scene {name} after {delay}s", flush=True)
+                time.sleep(delay)
         finally:
             shared.unlink(missing_ok=True)
         generated = OUT / "halloween-classic-clip.mp4"
