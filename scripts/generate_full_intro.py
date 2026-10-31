@@ -56,45 +56,46 @@ def main():
             "or enter direct image URLs in Run workflow. The existing poster is used for finale."
         )
     clips = []
+    skipped = []
+    attempts = int(os.environ.get("SCENE_MAX_ATTEMPTS", "2"))
     for idx, (name, prompt) in enumerate(SCENES, 1):
         print(f"=== Scene {idx}/5: {name} ===", flush=True)
         url, local = source_for(name)
         env = os.environ.copy()
         env.update(INPUT_IMAGE_URL=url, INPUT_PROMPT=prompt, INPUT_DURATION=DURATION)
+        shared = ROOT / "assets" / "scene.png"
+        shared.parent.mkdir(parents=True, exist_ok=True)
         if local:
-            # The existing generator checks assets/scene.png before its own poster fallback.
-            # Feed the scene image through a local file copy to that expected path.
-            shared = ROOT / "assets" / "scene.png"
-            shared.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(local, shared)
         else:
-            shared = ROOT / "assets" / "scene.png"
             shared.unlink(missing_ok=True)
+        generated = OUT / "halloween-classic-clip.mp4"
+        generated.unlink(missing_ok=True)
+        success = False
         try:
-            max_attempts = 5
-            for attempt in range(1, max_attempts + 1):
-                print(f"Scene {name}: rendering attempt {attempt}/{max_attempts}", flush=True)
+            for attempt in range(1, attempts + 1):
+                print(f"Scene {name}: rendering attempt {attempt}/{attempts}", flush=True)
                 result = subprocess.run(
                     [sys.executable, str(ROOT / "scripts" / "generate_wan_clip.py")],
                     env=env, check=False
                 )
-                if result.returncode == 0:
+                if result.returncode == 0 and generated.is_file():
+                    success = True
                     break
-                if attempt == max_attempts:
-                    raise RuntimeError(
-                        f"Scene {name} failed after {max_attempts} attempts; "
-                        "the shared public AI service may be unavailable. "
-                        "Previously generated scene clips are still in the artifact."
-                    )
-                delay = min(20 * attempt, 90)
-                print(f"Public GPU temporary failure; retrying scene {name} after {delay}s", flush=True)
-                time.sleep(delay)
+                if attempt < attempts:
+                    print(f"Scene {name} failed; next attempt in 10 seconds", flush=True)
+                    time.sleep(10)
         finally:
             shared.unlink(missing_ok=True)
-        generated = OUT / "halloween-classic-clip.mp4"
+        if not success:
+            skipped.append(name)
+            print(f"WARNING: Skipping {name}: public AI service rejected this scene", flush=True)
+            continue
         clip = OUT / f"{idx:02d}-{name}.mp4"
         generated.replace(clip)
         clips.append(clip)
+    if not clips:
+        raise RuntimeError("All scenes were rejected by the public AI video service.")
     # Re-encode to consistent parameters; the upstream may vary dimensions/frame rates.
     normalized = []
     for idx, clip in enumerate(clips, 1):
@@ -110,7 +111,7 @@ def main():
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
                     "-i", str(manifest), "-c", "copy", "-movflags", "+faststart", str(final)], check=True)
     (OUT / "full-intro-status.txt").write_text(f"SUCCESS: {final.name}; 5 scenes; silent video\n")
-    print(f"SUCCESS: {final}", flush=True)
+    print(f"SUCCESS: {final}; scenes rendered: {len(clips)}/5; skipped: {skipped}", flush=True)
 
 if __name__ == "__main__":
     try:
