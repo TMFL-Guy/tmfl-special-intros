@@ -1,0 +1,20 @@
+name: Render 3D Halloween Opening
+on:
+  workflow_dispatch:
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender and FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y blender ffmpeg
+      - name: Render actual 3D animation
+        run: blender -b -t 2 --python blender_opening.py
+      - name: Add atmospheric wind and clock audio
+        run: |
+          ffmpeg -y -i /tmp/halloween-opening.mp4 -f lavfi -i "anoisesrc=color=brown:amplitude=0.035:sample_rate=44100" -t 10 -c:v copy -c:a aac -shortest TMFL-Halloween-3D-Opening.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TMFL-Halloween-3D-Opening
+          path: TMFL-Halloween-3D-Opening.mp4
