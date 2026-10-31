@@ -1,0 +1,59 @@
+name: Generate Raven Descent and Graveyard CGI
+on:
+  workflow_dispatch:
+    inputs:
+      descent_image:
+        description: 'Raven flying down image'
+        required: true
+        type: choice
+        default: '35ce7a01-21b5-45b0-a059-c59fc9badde7.png'
+        options:
+          - '35ce7a01-21b5-45b0-a059-c59fc9badde7.png'
+          - 'ed12321a-8776-43ea-bf57-f51be360e592.png'
+      graveyard_image:
+        description: 'Raven with Jaguars and Buccaneers gravestones'
+        required: true
+        type: choice
+        default: 'ed12321a-8776-43ea-bf57-f51be360e592.png'
+        options:
+          - 'ed12321a-8776-43ea-bf57-f51be360e592.png'
+          - '35ce7a01-21b5-45b0-a059-c59fc9badde7.png'
+      scene_duration:
+        description: 'Seconds per CGI shot (0.5 to 4.5)'
+        required: true
+        default: '3.5'
+        type: string
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install video dependencies
+        run: |
+          python -m pip install requests pillow
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Animate raven descent then graveyard
+        env:
+          SELECT_SCENES: raven_descends,ravens_graveyard
+          IMAGE_FILE_RAVEN_DESCENDS: ${{ inputs.descent_image }}
+          IMAGE_FILE_RAVENS_GRAVEYARD: ${{ inputs.graveyard_image }}
+          SCENE_DURATION: ${{ inputs.scene_duration }}
+          SCENE_MAX_ATTEMPTS: '2'
+        run: python scripts/generate_full_intro.py
+      - name: Upload scene clips and assembled CGI
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TMFL-Raven-Descent-Graveyard-CGI
+          path: |
+            output/*.mp4
+            output/*status.txt
+          if-no-files-found: warn
+          retention-days: 7
